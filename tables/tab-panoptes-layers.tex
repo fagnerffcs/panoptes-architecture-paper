@@ -1,0 +1,14 @@
+\begin{table*}[!htbp]
+\centering
+\small
+\caption{Architectural Taxonomy and Structural Layers of the PANOPTES Reference Architecture}
+\label{tab:panoptes_layers}
+\begin{tabularx}{\textwidth}{@{}l p{3.6cm} p{4.2cm} X@{}}
+\toprule
+\textbf{Layer} & \textbf{Core Responsibilities} & \textbf{Underlying Technologies} & \textbf{Semantic Invariants \& Bindings} \\ \midrule
+\textbf{Layer 1: Probing \& Ingestion} & Non-invasive telemetry acquisition at user and kernel space & eBPF (Grafana Beyla), OpenTelemetry Collector DaemonSet, Promtail & Context propagation via W3C TraceContext; kernel probes capture L4/L7 socket events without application bytecode recompilation. \\ \addlinespace[2pt]
+\textbf{Layer 2: Multimodal Storage} & High-throughput, federated persistence of metrics, logs, traces & Prometheus (TSDB), Grafana Loki (Chunk store), Grafana Tempo & OpenMetrics Exemplar binding linking high-cardinality span IDs directly to metric time series buckets; label namespace consistency. \\ \addlinespace[2pt]
+\textbf{Layer 3: Causal Correlation} & Disambiguating cascading delays from true root-cause anomalies & PANOPTES Correlation Engine (PromQL, LogQL, Tempo gRPC API) & Exclusive Span Self-Time decomposition ($T_{\text{self}} = T_{\text{span}} - \sum T_{\text{child}}$); metric saturation delta thresholding ($\Delta M > 3\sigma$); log exception signature clustering. \\ \addlinespace[2pt]
+\textbf{Layer 4: Feedback \& Remediation} & Closed-loop actuation, SLO reporting, and automated healing & Kubernetes Custom Controllers, Chaos Mesh / Litmus API integration & Closed-loop verification; dynamic probe frequency dampening during cluster distress; automated alerting routing to incident management. \\ \bottomrule
+\end{tabularx}
+\end{table*}

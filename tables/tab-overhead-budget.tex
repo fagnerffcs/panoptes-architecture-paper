@@ -1,0 +1,15 @@
+\begin{table*}[!htbp]
+\centering
+\small
+\caption{Steady-State Cluster Resource Footprint: Workload vs. PANOPTES Observability Components ($N=30$ Observations, $\Delta t = 16\,\text{s}$)}
+\label{tab:overhead_budget}
+\begin{tabularx}{\textwidth}{@{}l p{4.2cm} c c c c@{}}
+\toprule
+\textbf{Subsystem Tier} & \textbf{Pods / DaemonSets Included} & \textbf{Mean CPU (mCPU)} & \textbf{Median CPU} & \textbf{Mean RAM (MiB)} & \textbf{Median RAM} \\ \midrule
+\textbf{SUT Microservice Workload} & Scoped Astronomy Shop ($10$ services) & $2{,}494.13 \pm 201.48$ & $2{,}485.00$ & $2{,}411.77 \pm 32.57$ & $2{,}410.00$ \\ \addlinespace[2pt]
+\textbf{Telemetry Ingestion \& Probes} & OpenTelemetry Collector, Promtail, Beyla & $34.20 \pm 12.45$ & $32.00$ & $384.50 \pm 41.20$ & $380.00$ \\ \addlinespace[2pt]
+\textbf{Multimodal Storage Tier} & Prometheus, Grafana Loki, Grafana Tempo & $82.50 \pm 38.10$ & $79.00$ & $1{,}620.00 \pm 310.25$ & $1{,}610.00$ \\ \addlinespace[2pt]
+\textbf{PANOPTES Correlation Engine} & Autonomous RCA Engine (Periodic Poller) & $14.47 \pm 15.71$ & $9.00$ & $232.50 \pm 104.00$ & $225.00$ \\ \midrule
+\textbf{Total Observability Overhead} & Entire PANOPTES Stack & $\mathbf{131.17 \pm 66.26}$ & $\mathbf{120.00}$ & $\mathbf{2{,}237.00 \pm 455.45}$ & $\mathbf{2{,}215.00}$ \\ \bottomrule
+\end{tabularx}
+\end{table*}

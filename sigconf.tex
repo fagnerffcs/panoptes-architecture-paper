@@ -1,0 +1,122 @@
+\documentclass[sigconf, balance=false]{acmart}
+
+\setcopyright{acmlicensed}
+\copyrightyear{2026}
+\acmYear{2026}
+\acmDOI{XXXXXXX.XXXXXXX}
+
+\acmConference[ACM Conf '26]{Make sure to enter the correct conference title from your rights confirmation email}{2026}{Location, Country}
+\acmISBN{978-1-4503-XXXX-X/2026/XX}
+
+\AtBeginDocument{%
+  \providecommand\BibTeX{{%
+    Bib\TeX}}}
+
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, calc}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{stfloats}
+\usepackage{placeins}
+\usepackage{enumitem}
+\usepackage{xurl}
+
+% Relax line-breaking penalties in narrow two-column layout to prevent margin overflows
+\emergencystretch=1.5em
+\sloppy
+
+% Tune float placement parameters so figures and tables stay close to their text
+\renewcommand{\topfraction}{0.95}
+\renewcommand{\bottomfraction}{0.95}
+\renewcommand{\textfraction}{0.05}
+\renewcommand{\floatpagefraction}{0.85}
+\renewcommand{\dbltopfraction}{0.95}
+\renewcommand{\dblfloatpagefraction}{0.85}
+\setcounter{topnumber}{5}
+\setcounter{bottomnumber}{5}
+\setcounter{totalnumber}{10}
+\setcounter{dbltopnumber}{5}
+
+\begin{document}
+
+\title[The PANOPTES Reference Architecture]{PANOPTES: A Reference Architecture and Multimodal Correlation Engine for Cloud-Native Observability}
+
+\author{Fagner Silva}
+\authornote{Both authors contributed equally to this research.}
+\affiliation{%
+  \institution{Centro de Informática, UFPE}
+  \city{Recife}
+  \state{Pernambuco}
+  \country{Brazil}
+}
+\email{ffcs@cin.ufpe.br}
+\orcid{0000-0000-0000-0000}
+
+\author{Jackson Raniel}
+\affiliation{%
+  \institution{Universidade de Pernambuco - Campus Caruaru}
+  \city{Caruaru}
+  \state{Pernambuco}
+  \country{Brazil}
+}
+\email{jackson.florencio@upe.br}
+
+\author{Vinícius Cardoso Garcia}
+\authornotemark[1]
+\affiliation{%
+  \institution{Centro de Informática, UFPE}
+  \city{Recife}
+  \state{Pernambuco}
+  \country{Brazil}
+}
+\email{vcg@cin.ufpe.br}
+
+\renewcommand{\shortauthors}{Silva et al.}
+
+\begin{abstract}
+In cloud-native computing, microservices orchestrated by Kubernetes emit an overwhelming volume of heterogeneous telemetry across the three classical pillars: time-series metrics, structured logs, and distributed traces. However, existing industrial toolchains manage these modalities in fragmented silos, forcing Site Reliability Engineers (SREs) to perform manual dashboard correlation during critical outages. Furthermore, naive automated root-cause analysis (RCA) techniques that rely on a single modality suffer from acute architectural pathologies: inclusive span duration ranking suffers from a \textit{Cascading Span Bias} that consistently misattributes root causes to upstream API gateways ($0.00\%$ accuracy in our baselines), while native infrastructure monitoring remains completely blind to non-fatal resource saturation and network delays. Grounded in the epistemology of Design Science Research (DSR), this paper introduces \textbf{PANOPTES}, a novel 4-layer reference architecture and causal correlation engine for cloud-native observability. PANOPTES unifies non-invasive eBPF and OpenTelemetry probes (Layer 1), federated multimodal storage backends via OpenMetrics Exemplars (Layer 2), an algorithmic correlation engine utilizing exclusive Span Self-Time decomposition ($T_{\text{self}} = T_{\text{span}} - \sum T_{\text{child}}$) and cross-modal evidence fusion (Layer 3), and closed-loop diagnostic remediation (Layer 4). We instantiate PANOPTES on a Kubernetes testbed and evaluate it through a controlled, paired, stratified factorial experiment ($N=30$ campaigns) over the polyglot CNCF OpenTelemetry Astronomy Shop benchmark under Chaos Mesh fault injections. Our empirical findings demonstrate that PANOPTES achieves $\mathbf{83.33\%}$ ($25/30$) root-cause diagnostic accuracy, decisively outperforming monomodal distributed tracing ($0.00\%$, Fisher's exact $p = 5.49 \times 10^{-12}$) and native CLI inspection ($20.00\%$, $p = 1.55 \times 10^{-6}$). Furthermore, PANOPTES slashes median diagnostic latency ($MTTDiag$) by $\mathbf{94.24\%}$ (from $300.00\,\text{s}$ to $\mathbf{17.27\,\text{s}}$, Wilcoxon $p = 1.35 \times 10^{-4}$, Vargha-Delaney $\hat{A}_{12} = 0.817$), while strictly bounding the dedicated observability CPU overhead to $\mathbf{5.26\% \pm 2.65\%}$ of the monitored workload ($131.17 \pm 66.26\,\text{mCPU}$), proving that comprehensive multimodal correlation can be achieved without compromising cluster stability.
+\end{abstract}
+
+\begin{CCSXML}
+<ccs2012>
+   <concept>
+       <concept_id>10011007.10011074.10011075</concept_id>
+       <concept_desc>Software and its engineering~Software architectures</concept_desc>
+       <concept_significance>500</concept_significance>
+   </concept>
+   <concept>
+       <concept_id>10011007.10011074.10011099.10011102.10011103</concept_id>
+       <concept_desc>Software and its engineering~Software testing and debugging</concept_desc>
+       <concept_significance>500</concept_significance>
+   </concept>
+   <concept>
+       <concept_id>10010520.10010521.10010537.10003100</concept_id>
+       <concept_desc>Computer systems organization~Cloud computing</concept_desc>
+       <concept_significance>500</concept_significance>
+   </concept>
+ </ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Software and its engineering~Software architectures}
+\ccsdesc[500]{Software and its engineering~Software testing and debugging}
+\ccsdesc[500]{Computer systems organization~Cloud computing}
+
+\keywords{Cloud-Native, Observability, Reference Architecture, Multimodal Correlation, Microservices, Design Science Research, Root Cause Analysis, Kubernetes}
+
+\maketitle
+
+\input{sections/01.introduction}
+\input{sections/02.background_and_problem}
+\input{sections/03.dsr_methodology}
+\input{sections/04.panoptes_reference_architecture}
+\input{sections/05.instantiation_and_algorithms}
+\input{sections/06.empirical_evaluation}
+\input{sections/07.threats_to_validity}
+\input{sections/08.conclusion}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+
+\end{document}

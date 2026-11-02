@@ -1,0 +1,42 @@
+\section{The PANOPTES Reference Architecture}
+\label{sec:panoptes_architecture}
+
+To address the diagnostic dilemmas identified in Section~\ref{sec:background} while strictly observing Control Principles \textbf{CP1} and \textbf{CP2}, we formalize the \textbf{PANOPTES} reference architecture. As illustrated in Figure~\ref{fig:panoptes_architecture} and categorized in Table~\ref{tab:panoptes_layers}, PANOPTES decomposes the cloud-native observability lifecycle into four decoupled, synergistic layers.
+
+\input{figures/fig-panoptes-architecture}
+\input{tables/tab-panoptes-layers}
+
+\subsection{Layer 1: Telemetry Ingestion \& Non-Invasive Probes}
+Layer 1 is responsible for capturing raw runtime signals from both application user space and the underlying Linux operating system kernel without imposing unmanageable performance penalties:
+\begin{itemize}[leftmargin=1.2em, itemsep=2pt, topsep=3pt]
+    \item \textbf{Non-Invasive eBPF Instrumentation (Grafana Beyla):} To observe network sockets, HTTP/2 payloads, and gRPC remote procedure calls without bytecode modification or library re-linking, PANOPTES deploys kernel-resident extended Berkeley Packet Filter (eBPF) probes. Attached to tracepoints such as \texttt{kprobe/tcp\_v4\_connect} and \texttt{uprobe/ssl\_write}, eBPF programs calculate round-trip socket latencies and export standardized OpenTelemetry spans with zero application downtime.
+    \item \textbf{OpenTelemetry Collector DaemonSet:} Standardized OTLP (OpenTelemetry Protocol) pipelines run as a lightweight per-node DaemonSet, receiving traces and metrics via gRPC, executing local batching, memory-limiter throttling, and attribute normalization (e.g., standardizing \texttt{k8s.pod.name} and \texttt{k8s.namespace.name} labels) prior to network egress.
+    \item \textbf{Linux cgroup v2 Resource Scrapers:} Node-level resource usage is captured directly from the Linux unified \texttt{cgroup} filesystem by the Kubernetes Kubelet, ensuring authoritative metric accounting decoupled from container runtime telemetry agents.
+\end{itemize}
+
+\subsection{Layer 2: Multimodal Federated Telemetry Backends}
+Rather than enforcing an unwieldy, monolithic database schema that struggles to balance high-throughput time-series metrics with high-volume span graphs and unstructured log lines, Layer 2 employs a federated persistence model governed by three specialized, best-of-breed open-source backends:
+\begin{itemize}[leftmargin=1.2em, itemsep=2pt, topsep=3pt]
+    \item \textbf{Prometheus (Time-Series Metrics TSDB):} Optimized for high-frequency numeric scraping ($15\,\text{s}$ scrape interval), sub-millisecond gauge lookups, and counter delta evaluations via PromQL.
+    \item \textbf{Grafana Loki (Log Stream Store):} Inverts conventional full-text indexing by organizing log streams strictly by Kubernetes metadata labels, allowing streaming regex searches and exception frequency aggregations via LogQL without storage bloat.
+    \item \textbf{Grafana Tempo (Distributed Trace Object Store):} Implements massively scalable, index-free object storage for distributed traces, indexing solely by 128-bit \texttt{trace\_id}.
+\end{itemize}
+
+\subsubsection{The Semantic Binding: OpenMetrics Exemplar Bridge}
+The fundamental innovation enabling cross-modal cohesion between Layer 1 and Layer 2 is the \textbf{OpenMetrics Exemplar Bridge}. When the OpenTelemetry Collector processes an incoming request span, it attaches an Exemplar—a discrete metadata tuple containing $(\texttt{trace\_id}, \texttt{span\_id}, \text{timestamp})$—directly to the corresponding Prometheus histogram bucket. When a latency spike is detected in a PromQL metric query, the Exemplar serves as an immediate pointer, allowing Layer 3 to jump directly to the representative distributed trace without requiring exhaustive cross-database full scans.
+
+\subsection{Layer 3: Causal Correlation \& Diagnostic Reasoning Engine}
+Layer 3 represents the algorithmic core of PANOPTES. It eliminates the manual dashboard correlation previously required of human SREs by fusing telemetry streams into an authoritative diagnostic verdict:
+\begin{itemize}[leftmargin=1.2em, itemsep=2pt, topsep=3pt]
+    \item \textbf{Span Self-Time Decomposition:} As formally detailed in Section~\ref{sec:algorithms}, this module subtracts the cumulative duration of all downstream child spans from parent spans, neutralizing the Cascading Span Bias and accurately isolating the true RPC bottleneck.
+    \item \textbf{PromQL Resource Saturation Detection:} Continuously samples cgroup CPU throttling and memory working sets, triggering when usage deviates beyond a dynamic threshold ($\Delta M > 3\sigma_{\text{baseline}}$).
+    \item \textbf{LogQL Crash \& Exception Pattern Matching:} Filters log streams for critical container lifecycle signatures (e.g., \texttt{SIGTERM}, \texttt{SIGKILL}, panic backtraces, connection-refused exceptions) within the temporal window of interest.
+\end{itemize}
+
+\subsection{Layer 4: Closed-Loop Feedback \& Autonomous Remediation}
+The final layer operationalizes the diagnostic outputs of Layer 3 to close the control loop:
+\begin{itemize}[leftmargin=1.2em, itemsep=2pt, topsep=3pt]
+    \item \textbf{Autonomous Diagnostic Verification:} Exposes REST and gRPC endpoints that emit standardized JSON diagnostic audit trails, logging the identified root-cause microservice, fault modality, and supporting evidence IDs (e.g., specific PromQL vectors, Loki log excerpts, or Tempo span identifiers).
+    \item \textbf{Kubernetes Custom Controller Integration:} Emits structured Kubernetes events or Custom Resource updates, allowing automated auto-scalers, restart controllers, or circuit breakers to execute remediation without human latency.
+    \item \textbf{Dynamic Telemetry Throttling:} When cluster resource pressure exceeds established safety budgets ($>80\%$ node CPU), Layer 4 dispatches feedback signals to Layer 1, adaptively reducing trace sampling rates and metric scraping frequencies to protect workload availability.
+\end{itemize}

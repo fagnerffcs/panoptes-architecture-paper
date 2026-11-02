@@ -1,0 +1,15 @@
+\begin{table*}[!htbp]
+\centering
+\small
+\caption{Design Science Research (DSR) Framework Mapping for the PANOPTES Reference Architecture}
+\label{tab:dsr_elements}
+\begin{tabularx}{\textwidth}{@{}l p{4.2cm} X@{}}
+\toprule
+\textbf{DSR Dimension} & \textbf{Epistemological Definition} & \textbf{Operationalization in PANOPTES} \\ \midrule
+\textbf{Problem Domain} & Real-world operational dilemma in cloud-native microservices & Elevated Mean Time to Diagnose ($MTTDiag$), diagnostic inaccuracy under cascading faults, and unquantified probe overhead in distributed container environments (Wicked Problem). \\ \addlinespace[2pt]
+\textbf{Class of Problems} & Generalized software engineering challenge & Automated, real-time correlation across heterogeneous, asynchronous telemetry modalities (metrics, logs, traces) without degrading host/cgroup performance. \\ \addlinespace[2pt]
+\textbf{Artifact Type} & Prescriptive scientific contribution (Vaishnavi \& Kuechler) & \textbf{Model / Architecture:} Structural 4-layer reference framework with formal semantic bindings; \textbf{Method:} Span self-time ($T_{\text{self}}$) decomposition and exemplar correlation; \textbf{Instantiation:} Kubernetes IaC stack (Prometheus, Loki, Tempo, eBPF, OTel Collector). \\ \addlinespace[2pt]
+\textbf{Design Principles} & Foundational engineering heuristics (Hevner et al.) & \textbf{CP1 (Least Invasive Observation):} Probe isolation bounded to $\le 10\%$ CPU; \textbf{CP2 (Semantic Continuity):} Preserving cross-modal causality across synchronous RPC and asynchronous Kafka events. \\ \addlinespace[2pt]
+\textbf{Evaluation Rigor} & Controlled empirical validation (Wohlin et al.) & Factorial controlled experiment over CNCF Astronomy Shop ($N=30$ paired trials, stratified fault injections, non-parametric inference via Wilcoxon, Fisher's Exact, and McNemar tests). \\ \bottomrule
+\end{tabularx}
+\end{table*}

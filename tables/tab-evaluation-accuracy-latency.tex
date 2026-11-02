@@ -1,0 +1,13 @@
+\begin{table*}[!htbp]
+\centering
+\small
+\caption{Empirical Comparison of Root-Cause Analysis (RCA) Diagnostic Regimes ($N=30$ Paired Stratified Trials)}
+\label{tab:evaluation_results}
+\begin{tabularx}{\textwidth}{@{}l c c c c c X@{}}
+\toprule
+\textbf{Diagnostic Regime} & \textbf{Acc (\%) } & \textbf{Successes} & \textbf{Median $MTTDiag$} & \textbf{Mean $MTTDiag$} & \textbf{IQR} & \textbf{Statistical Inference vs. PANOPTES} \\ \midrule
+\textbf{Native Kubernetes CLI (L2)} & $20.00\%$ & $6/30$ & $300.00\,\text{s}$ & $246.33 \pm 116.82\,\text{s}$ & $0.00\,\text{s}$ & Fisher's Exact $p = 7.74 \times 10^{-7}$, McNemar $p = 7.83 \times 10^{-5}$ \\ \addlinespace[2pt]
+\textbf{Monomodal Trace Duration (L3)} & $0.00\%$ & $0/30$ & $300.00\,\text{s}$ & $300.00 \pm 0.00\,\text{s}$ & $0.00\,\text{s}$ & Fisher's Exact $p = 1.05 \times 10^{-11}$, McNemar $p = 2.98 \times 10^{-8}$ \\ \addlinespace[2pt]
+\textbf{PANOPTES Multimodal Engine (L4)} & $\mathbf{83.33\%}$ & $\mathbf{25/30}$ & $\mathbf{17.27\,\text{s}}$ & $\mathbf{54.52 \pm 98.41\,\text{s}}$ & $\mathbf{24.28\,\text{s}}$ & \textit{Baseline reference architecture (Proposed Artifact)} \\ \bottomrule
+\end{tabularx}
+\end{table*}

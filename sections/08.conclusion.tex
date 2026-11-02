@@ -1,0 +1,20 @@
+\section{Conclusion and Future Work}
+\label{sec:conclusion}
+
+In this paper, we introduced \textbf{PANOPTES}, a novel reference architecture and multimodal correlation engine for cloud-native microservice observability. Grounded in Design Science Research (DSR), PANOPTES provides a principled 4-layer structural model that resolves the diagnostic fragmentation of telemetry silos and eliminates the Cascading Span Bias through exclusive Span Self-Time decomposition ($T_{\text{self}}$) and OpenMetrics Exemplar bridging.
+
+Our empirical evaluation over $N=30$ paired, stratified chaos campaigns on the CNCF OpenTelemetry Astronomy Shop benchmark demonstrated the decisive practical efficacy of the proposed artifact:
+\begin{enumerate}[leftmargin=1.2em, itemsep=2pt, topsep=3pt]
+    \item \textbf{Diagnostic Accuracy Parity:} PANOPTES achieved $\mathbf{83.33\%}$ global root-cause accuracy ($25/30$), decisively outperforming monomodal distributed tracing ($0.00\%$, $p = 5.49 \times 10^{-12}$) and native Kubernetes CLI inspection ($20.00\%$, $p = 1.55 \times 10^{-6}$).
+    \item \textbf{Latency Acceleration:} PANOPTES slashed median diagnostic latency by $\mathbf{94.24\%}$—from $300.00\,\text{s}$ under baseline failure regimes to $\mathbf{17.27\,\text{s}}$ (Wilcoxon $p = 1.35 \times 10^{-4}$, Vargha-Delaney $\hat{A}_{12} = 0.817$).
+    \item \textbf{Bounded Overhead Budget:} The steady-state CPU footprint of the complete observability infrastructure was strictly constrained to $\mathbf{5.26\% \pm 2.65\%}$ of the monitored workload ($131.17 \pm 66.26\,\text{mCPU}$), successfully satisfying Control Principle \textbf{CP1}.
+\end{enumerate}
+
+In future work, we plan to extend the PANOPTES reference architecture in two directions: (i) incorporating deep eBPF kernel probes for zero-instrumentation distributed trace propagation across encrypted TLS boundaries, and (ii) integrating closed-loop Large Language Model (LLM) agents within Layer 4 to autonomously synthesize targeted remediation playbooks and dynamic chaos verification experiments.
+
+\section*{Declarations and Scientific Integrity}
+\label{sec:declarations}
+
+\textbf{Use of AI Tools:} Generative AI and Large Language Model (LLM) tools were used solely for minor grammatical editing and LaTeX formatting under direct author supervision. All experimental designs, architectural models, scripts, and scientific analyses were conceived and verified by the authors. \\
+\textbf{Conflicts of Interest:} The authors declare that they have no competing financial or personal interests that could influence the work reported in this paper. \\
+\textbf{Artifact Availability:} To adhere to the Open Science standards of the ACM, all Infrastructure-as-Code playbooks, orchestration harnesses, raw CSV/JSONL telemetry traces, and statistical analysis scripts are publicly available in our replication package repository at \url{https://github.com/fagnerffcs/panoptes-architecture-paper}.

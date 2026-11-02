@@ -1,0 +1,55 @@
+\section{Instantiation and Algorithmic Realization}
+\label{sec:algorithms}
+
+\subsection{Infrastructure-as-Code (IaC) Instantiation}
+To guarantee full reproducibility, the PANOPTES reference architecture is instantiated as an automated Infrastructure-as-Code (IaC) deployment package:
+\begin{itemize}[leftmargin=1.2em, itemsep=2pt, topsep=3pt]
+    \item \textbf{Cluster Substrate:} Provisioned on lightweight Kubernetes (K3s/K3d v1.33.x) with strict per-node cgroup resource quotas ($2.0\,\text{vCPUs}$ and $4096\,\text{MiB}$ RAM per worker node).
+    \item \textbf{Ansible Orchestration:} An automated playbook (\texttt{deploy-panoptes.yml}) configures the OpenTelemetry Collector DaemonSet, Prometheus, Grafana Loki, and Grafana Tempo, establishing mutual network authentication and label uniformity across namespaces.
+    \item \textbf{Pre-Flight Health Checks:} A validation script (\texttt{check-panoptes-health.sh}) verifies telemetry ingest pipelines, PromQL/LogQL API connectivity, and synthetic traffic generation prior to commencing evaluation campaigns.
+\end{itemize}
+
+\subsection{Algorithm 1: Exclusive Span Self-Time Decomposition}
+To formally eliminate the Cascading Span Bias, we define the \textbf{Span Self-Time Decomposition Algorithm}. Let a distributed trace $\mathcal{T}$ be modeled as a directed tree $G = (V, E)$, where each vertex $v \in V$ represents an execution span corresponding to a microservice $S(v)$, characterized by an inclusive start timestamp $t_{\text{start}}(v)$, end timestamp $t_{\text{end}}(v)$, and total duration $T_{\text{span}}(v) = t_{\text{end}}(v) - t_{\text{start}}(v)$.
+
+Let $\mathcal{C}(v) = \{u \in V \mid (v, u) \in E\}$ denote the set of direct child spans invoked synchronously by span $v$. The exclusive \textbf{Self-Time} of span $v$, denoted $T_{\text{self}}(v)$, is the duration spent executing internal computation or waiting on un-instrumented I/O within microservice $S(v)$, strictly excluding the time spent waiting for downstream child RPC responses:
+
+\begin{equation}
+    T_{\text{self}}(v) = T_{\text{span}}(v) - \sum_{u \in \mathcal{C}(v)} T_{\text{span}}(u)
+    \label{eq:selftime}
+\end{equation}
+
+When concurrent asynchronous child invocations overlap in time, the subtrahend is replaced by the Lebesgue measure of the union of child time intervals:
+\begin{equation}
+    T_{\text{self}}(v) = T_{\text{span}}(v) - \left| \bigcup_{u \in \mathcal{C}(v)} [t_{\text{start}}(u), t_{\text{end}}(u)] \right|
+\end{equation}
+
+The service suspected of introducing network or processing latency, denoted $S^*$, is then identified by maximizing exclusive self-time across all spans in the trace:
+\begin{equation}
+    S^* = \arg\max_{S} \left( \max_{v \in V \mid S(v) = S} T_{\text{self}}(v) \right)
+\end{equation}
+
+By shifting the evaluation metric from inclusive span duration to exclusive self-time, upstream gateway services (e.g., \texttt{frontend}, whose $T_{\text{self}} \approx 1\text{--}5\,\text{ms}$ despite $T_{\text{span}} > 2000\,\text{ms}$) are immediately exonerated, allowing the algorithm to pinpoint the exact downstream microservice experiencing the perturbation.
+
+\subsection{Algorithm 2: Cross-Modal Evidence Fusion}
+The PANOPTES correlation engine executes multi-modal evidence fusion through a tripartite polling loop:
+
+\begin{enumerate}[leftmargin=1.2em, itemsep=2pt, topsep=3pt]
+    \item \textbf{Metric Saturation Vector ($\mathcal{V}_{\text{metric}}$):} The engine evaluates Prometheus PromQL vectors for CPU core saturation:
+    \begin{equation}
+        \Delta_{\text{CPU}}(s) = \text{rate}(\texttt{container\_cpu\_usage\_seconds\_total}[1\text{m}])_s - \mu_{\text{baseline}}(s)
+    \end{equation}
+    If $\Delta_{\text{CPU}}(s) > 3\sigma_{\text{baseline}}(s)$, microservice $s$ is flagged with a metric confidence score $\mathcal{S}_{\text{metric}} = 1.0$.
+    \item \textbf{Log Exception Vector ($\mathcal{V}_{\text{log}}$):} The engine queries Loki via LogQL for pod termination and exception patterns within a $60\,\text{s}$ rolling window:
+    \begin{equation}
+        \mathcal{Q}_{\text{log}} = \texttt{\{namespace="otel-demo"\} |~ "(?i)(sigterm|sigkill|panic|broken pipe)"}
+    \end{equation}
+    If critical termination logs match microservice $s$, $\mathcal{S}_{\text{log}} = 1.0$.
+    \item \textbf{Trace Bottleneck Vector ($\mathcal{V}_{\text{trace}}$):} The engine queries Tempo for the top degraded traces ($p99$ latency) and evaluates Algorithm 1. If microservice $s$ accounts for the maximal $T_{\text{self}}$, $\mathcal{S}_{\text{trace}} = 1.0$.
+\end{enumerate}
+
+The global diagnostic verdict $\mathcal{V}^*$ is formulated by selecting the candidate microservice that maximizes the multi-modal evidence function:
+\begin{equation}
+    \mathcal{V}^* = \arg\max_{s \in \mathcal{P}_{\text{target}}} \left( \omega_m \mathcal{S}_{\text{metric}}(s) + \omega_l \mathcal{S}_{\text{log}}(s) + \omega_t \mathcal{S}_{\text{trace}}(s) \right)
+\end{equation}
+where $\omega_m = 0.35$, $\omega_l = 0.35$, and $\omega_t = 0.30$ represent calibrated modality weights. Ties are broken in favor of log crash evidence, reflecting the incontrovertible finality of container termination events.
