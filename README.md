@@ -89,13 +89,13 @@ ansible-playbook -i localhost, scripts/deploy-panoptes.yml
 # 2. Executa a checagem de prontidão e pipelines de telemetria
 bash scripts/check-panoptes-health.sh
 
-# 3. Executa as rodadas pareadas de injeção de caos e diagnóstico cego
+# 3. Executa os cenários de validação arquitetural e diagnóstico cego
 python3 scripts/run-scenario4-optimized-trials.py
 ```
 
 ---
 
-## 📊 Principais Resultados Empíricos
+## 📊 Resultados da Validação Arquitetural e Benchmarking de Desempenho
 
 | Dimensão Avaliada | Regime Baseline (CLI / Tracing) | PANOPTES Reference Architecture | Evidência / Teste Estatístico |
 |---|---|---|---|

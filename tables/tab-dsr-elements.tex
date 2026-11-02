@@ -10,6 +10,6 @@
 \textbf{Class of Problems} & Generalized software engineering challenge & Automated, real-time correlation across heterogeneous, asynchronous telemetry modalities (metrics, logs, traces) without degrading host/cgroup performance. \\ \addlinespace[2pt]
 \textbf{Artifact Type} & Prescriptive scientific contribution (Vaishnavi \& Kuechler) & \textbf{Model / Architecture:} Structural 4-layer reference framework with formal semantic bindings; \textbf{Method:} Span self-time ($T_{\text{self}}$) decomposition and exemplar correlation; \textbf{Instantiation:} Kubernetes IaC stack (Prometheus, Loki, Tempo, eBPF, OTel Collector). \\ \addlinespace[2pt]
 \textbf{Design Principles} & Foundational engineering heuristics (Hevner et al.) & \textbf{CP1 (Least Invasive Observation):} Probe isolation bounded to $\le 10\%$ CPU; \textbf{CP2 (Semantic Continuity):} Preserving cross-modal causality across synchronous RPC and asynchronous Kafka events. \\ \addlinespace[2pt]
-\textbf{Evaluation Rigor} & Controlled empirical validation (Wohlin et al.) & Factorial controlled experiment over CNCF Astronomy Shop ($N=30$ paired trials, stratified fault injections, non-parametric inference via Wilcoxon, Fisher's Exact, and McNemar tests). \\ \bottomrule
+\textbf{Evaluation Rigor} & Multi-criteria artifact evaluation (Hevner et al.) & Technical feasibility and overhead benchmarking (CP1 verification) coupled with architectural utility validation across $N=30$ stratified failure scenarios on CNCF Astronomy Shop. \\ \bottomrule
 \end{tabularx}
 \end{table*}
