@@ -37,12 +37,18 @@ The PANOPTES correlation engine executes multi-modal evidence fusion through a t
 \begin{enumerate}[leftmargin=1.2em, itemsep=2pt, topsep=3pt]
     \item \textbf{Metric Saturation Vector ($\mathcal{V}_{\text{metric}}$):} The engine evaluates Prometheus PromQL vectors for CPU core saturation:
     \begin{equation}
-        \Delta_{\text{CPU}}(s) = \text{rate}(\texttt{container\_cpu\_usage\_seconds\_total}[1\text{m}])_s - \mu_{\text{baseline}}(s)
+    \begin{split}
+        \Delta_{\text{CPU}}(s) = &\ \text{rate}(\texttt{container\_cpu\_usage\_total}[1\text{m}])_s \\
+        &- \mu_{\text{baseline}}(s)
+    \end{split}
     \end{equation}
     If $\Delta_{\text{CPU}}(s) > 3\sigma_{\text{baseline}}(s)$, microservice $s$ is flagged with a metric confidence score $\mathcal{S}_{\text{metric}} = 1.0$.
     \item \textbf{Log Exception Vector ($\mathcal{V}_{\text{log}}$):} The engine queries Loki via LogQL for pod termination and exception patterns within a $60\,\text{s}$ rolling window:
     \begin{equation}
-        \mathcal{Q}_{\text{log}} = \texttt{\{namespace="otel-demo"\} |~ "(?i)(sigterm|sigkill|panic|broken pipe)"}
+    \begin{split}
+        \mathcal{Q}_{\text{log}} = &\ \texttt{\{namespace="otel-demo"\}} \\
+        &\ \texttt{|~ "(?i)(sigterm|sigkill|panic|broken pipe)"}
+    \end{split}
     \end{equation}
     If critical termination logs match microservice $s$, $\mathcal{S}_{\text{log}} = 1.0$.
     \item \textbf{Trace Bottleneck Vector ($\mathcal{V}_{\text{trace}}$):} The engine queries Tempo for the top degraded traces ($p99$ latency) and evaluates Algorithm 1. If microservice $s$ accounts for the maximal $T_{\text{self}}$, $\mathcal{S}_{\text{trace}} = 1.0$.
@@ -50,6 +56,9 @@ The PANOPTES correlation engine executes multi-modal evidence fusion through a t
 
 The global diagnostic verdict $\mathcal{V}^*$ is formulated by selecting the candidate microservice that maximizes the multi-modal evidence function:
 \begin{equation}
-    \mathcal{V}^* = \arg\max_{s \in \mathcal{P}_{\text{target}}} \left( \omega_m \mathcal{S}_{\text{metric}}(s) + \omega_l \mathcal{S}_{\text{log}}(s) + \omega_t \mathcal{S}_{\text{trace}}(s) \right)
+\begin{split}
+    \mathcal{V}^* = \arg\max_{s \in \mathcal{P}_{\text{target}}} \Big( & \omega_m \mathcal{S}_{\text{metric}}(s) + \omega_l \mathcal{S}_{\text{log}}(s) \\
+    & + \omega_t \mathcal{S}_{\text{trace}}(s) \Big)
+\end{split}
 \end{equation}
 where $\omega_m = 0.35$, $\omega_l = 0.35$, and $\omega_t = 0.30$ represent calibrated modality weights. Ties are broken in favor of log crash evidence, reflecting the incontrovertible finality of container termination events.
