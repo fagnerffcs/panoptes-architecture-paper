@@ -1,87 +1,142 @@
 \begin{figure*}[!htbp]
 \centering
 \begin{tikzpicture}[
-    node distance=0.55cm and 0.28cm,
     font=\sffamily\scriptsize,
     basebox/.style={draw, rounded corners=3pt, align=center, inner sep=3.5pt},
-    layerbox/.style={draw=black!70, rounded corners=4pt, dashed, inner sep=6pt, fill=black!2},
+    layerbox/.style={draw=black!60, rounded corners=4pt, dashed, inner sep=6pt, fill=black!2},
     titlelabel/.style={font=\sffamily\bfseries\footnotesize, text=black!85, anchor=west},
-    sutnode/.style={basebox, fill=blue!10, draw=blue!65!black, minimum width=2.4cm, minimum height=0.65cm},
-    probenode/.style={basebox, fill=cyan!12, draw=cyan!70!black, minimum width=2.4cm, minimum height=0.65cm},
-    storenode/.style={basebox, fill=teal!12, draw=teal!70!black, minimum width=3.8cm, minimum height=0.75cm},
-    correnode/.style={basebox, fill=purple!12, draw=purple!75!black, minimum width=5.5cm, minimum height=0.75cm},
-    actnode/.style={basebox, fill=orange!12, draw=orange!75!black, minimum width=4.5cm, minimum height=0.65cm},
-    arrow/.style={-{Stealth[scale=0.9]}, thick, draw=black!75},
+    sutnode/.style={basebox, fill=blue!10, draw=blue!65!black, minimum width=3.4cm, minimum height=0.62cm},
+    probenode/.style={basebox, fill=cyan!12, draw=cyan!75!black, minimum width=5.0cm, minimum height=0.72cm},
+    storenode/.style={basebox, fill=teal!12, draw=teal!75!black, minimum width=5.0cm, minimum height=0.75cm},
+    correnode/.style={basebox, fill=purple!12, draw=purple!80!black, minimum height=0.85cm},
+    actnode/.style={basebox, fill=orange!12, draw=orange!80!black, minimum width=11.2cm, minimum height=0.70cm},
+    arrow/.style={-{Stealth[scale=0.85]}, thick, draw=black!75},
     biarrow/.style={{Stealth[scale=0.8]}-{Stealth[scale=0.8]}, thick, draw=black!70}
 ]
 
-    % --- LAYER 1: INSTRUMENTATION & PROBING ---
-    \node[sutnode] (sut_frontend) {\textbf{frontend}\\(HTTP/gRPC Gateway)};
-    \node[sutnode, right=0.35cm of sut_frontend] (sut_cart) {\textbf{cart}\\(gRPC + Valkey)};
-    \node[sutnode, right=0.35cm of sut_cart] (sut_shipping) {\textbf{shipping}\\(gRPC Service)};
-    \node[sutnode, right=0.35cm of sut_shipping] (sut_payment) {\textbf{payment}\\(Kafka Consumer)};
+    % =========================================================================
+    % LAYER 1: SUT & TELEMETRY INGESTION (PROBES)
+    % =========================================================================
+    % Microservices SUT Row
+    \node[sutnode] (sut_frontend) at (-5.6, 6.2) {\textbf{frontend} / \textbf{cart}\\(HTTP/gRPC Gateway \& State)};
+    \node[sutnode] (sut_shipping) at (0.0, 6.2) {\textbf{shipping} / \textbf{checkout}\\(Synchronous RPC Workloads)};
+    \node[sutnode] (sut_payment)  at (5.6, 6.2) {\textbf{payment} / \textbf{currency}\\(Kafka Async \& Background)};
 
-    \node[probenode, below=0.35cm of sut_frontend] (probe_ebpf) {\textbf{eBPF Kernel Probes}\\\texttt{kprobe/tcp\_v4\_connect}};
-    \node[probenode, below=0.35cm of sut_cart] (probe_otel) {\textbf{OTel Auto-Instr.}\\(W3C TraceContext)};
-    \node[probenode, below=0.35cm of sut_shipping] (probe_cgroup) {\textbf{cgroup v2 Scrapers}\\\texttt{container\_cpu\_usage}};
-    \node[probenode, below=0.35cm of sut_payment] (probe_promtail) {\textbf{Promtail DaemonSet}\\\texttt{/var/log/pods/*.log}};
+    % Probe Row (Aligned vertically with the 3 pillars)
+    \node[probenode] (probe_traces) at (-5.6, 4.9) {
+        \textbf{OTel SDK \& Auto-Instrumentation}\\
+        \textit{Modality: Distributed Traces}\\
+        W3C TraceContext In-Band Propagation
+    };
+
+    \node[probenode] (probe_metrics) at (0.0, 4.9) {
+        \textbf{eBPF Probes \& cgroup v2 Scrapers}\\
+        \textit{Modality: Infrastructure \& Socket Metrics}\\
+        \texttt{kprobe/tcp\_v4\_connect} $\;|\;$ CPU Throttling
+    };
+
+    \node[probenode] (probe_logs) at (5.6, 4.9) {
+        \textbf{Promtail / Fluentbit DaemonSet}\\
+        \textit{Modality: Structured Container Logs}\\
+        \texttt{/var/log/pods/*.log} Regex Streaming
+    };
 
     \begin{scope}[on background layer]
-        \node[layerbox, fit=(sut_frontend)(sut_payment)(probe_ebpf)(probe_promtail)] (layer1) {};
+        \node[layerbox, fit=(sut_frontend)(sut_payment)(probe_traces)(probe_logs)] (layer1) {};
     \end{scope}
     \node[titlelabel] at (layer1.north west) [yshift=0.25cm] {\textbf{Layer 1: Telemetry Ingestion \& Non-Invasive Kernel/User Probes}};
 
-    % --- LAYER 2: MULTIMODAL STORAGE ---
-    \node[storenode, below=0.85cm of probe_ebpf, xshift=1.2cm] (store_prom) {\textbf{Prometheus TSDB}\\\textit{Modality: Metrics (OpenMetrics)}\\Counter \& Gauge Scraping ($15\,\text{s}$)};
-    \node[storenode, below=0.85cm of probe_otel, xshift=2.0cm] (store_loki) {\textbf{Grafana Loki Chunk Store}\\\textit{Modality: Structured Logs}\\LogQL Inverted Stream Indexing};
-    \node[storenode, below=0.85cm of probe_promtail, xshift=2.8cm] (store_tempo) {\textbf{Grafana Tempo Object Store}\\\textit{Modality: Distributed Traces}\\Span Graph \& Exemplar Ingestion};
+    % =========================================================================
+    % LAYER 2: MULTIMODAL FEDERATED STORAGE BACKENDS
+    % =========================================================================
+    \node[storenode] (store_tempo) at (-5.6, 3.1) {
+        \textbf{Grafana Tempo Object Store}\\
+        \textit{Modality: Distributed Traces}\\
+        OTLP Ingestion \& Inverted Trace Indexing
+    };
+
+    \node[storenode] (store_prom) at (0.0, 3.1) {
+        \textbf{Prometheus TSDB}\\
+        \textit{Modality: Time-Series Metrics}\\
+        High-Frequency Scraping ($15\,\text{s}$) \& PromQL
+    };
+
+    \node[storenode] (store_loki) at (5.6, 3.1) {
+        \textbf{Grafana Loki Chunk Store}\\
+        \textit{Modality: Structured Event Logs}\\
+        Label-Indexed Stream Storage \& LogQL
+    };
 
     \begin{scope}[on background layer]
-        \node[layerbox, fit=(store_prom)(store_tempo)] (layer2) {};
+        \node[layerbox, fit=(store_tempo)(store_loki)] (layer2) {};
     \end{scope}
     \node[titlelabel] at (layer2.north west) [yshift=0.25cm] {\textbf{Layer 2: Multimodal Federated Telemetry Backends}};
 
-    % --- LAYER 3: CAUSAL CORRELATION & RCA ---
-    \node[correnode, below=0.85cm of store_loki, xshift=-2.2cm] (algo_selftime) {\textbf{Algorithm 1: Span Self-Time Decomposition}\\\large $T_{\text{self}} = T_{\text{span}} - \sum_{k} T_{\text{child}_k}$\\Eliminates Cascading Span Bias on L4/L7 RPCs};
-    \node[correnode, below=0.85cm of store_loki, xshift=3.8cm] (algo_fusion) {\textbf{Algorithm 2: Cross-Modal Evidence Fusion}\\\large $\mathcal{V} = \text{argmin}_{s} \Big(\omega_m \mathcal{S}_{\text{CPU}} + \omega_l \mathcal{S}_{\text{Log}} + \omega_t \mathcal{S}_{\text{Span}}\Big)$\\Exemplar-Linked Contextual Isolation};
+    % =========================================================================
+    % LAYER 3: CAUSAL CORRELATION & DIAGNOSTIC REASONING ENGINE
+    % =========================================================================
+    \node[correnode, minimum width=5.6cm] (algo_selftime) at (-5.3, 1.2) {
+        \textbf{Algorithm 1: Span Self-Time Decomposition}\\
+        {\footnotesize $T_{\text{self}} = T_{\text{span}} - \sum_{k} T_{\text{child}_k}$}\\
+        Eliminates Cascading Span Bias on Ingress RPCs
+    };
+
+    \node[correnode, minimum width=9.8cm] (algo_fusion) at (2.8, 1.2) {
+        \textbf{Algorithm 2: Cross-Modal Evidence Fusion}\\
+        {\footnotesize $\mathcal{V}^* = \arg\max_{s} \Big(\omega_m \mathcal{S}_{\text{metric}} + \omega_l \mathcal{S}_{\text{log}} + \omega_t \mathcal{S}_{\text{trace}}\Big)$}\\
+        Correlates Exemplar Trace Context with Metric/Log Signatures
+    };
 
     \begin{scope}[on background layer]
         \node[layerbox, fit=(algo_selftime)(algo_fusion)] (layer3) {};
     \end{scope}
     \node[titlelabel] at (layer3.north west) [yshift=0.25cm] {\textbf{Layer 3: PANOPTES Multimodal Causal Correlation \& Diagnostic Reasoning Engine}};
 
-    % --- LAYER 4: CLOSED-LOOP REMEDIATION ---
-    \node[actnode, below=0.75cm of algo_selftime, xshift=3.0cm] (act_operator) {\textbf{Kubernetes Operator / SRE Dashboard}\\\textit{Autonomous Remediation, Rescheduling \& SLO Audit}};
+    % =========================================================================
+    % LAYER 4: CLOSED-LOOP REMEDIATION & VERIFICATION
+    % =========================================================================
+    \node[actnode] (act_operator) at (0.0, -0.65) {
+        \textbf{Autonomous Diagnostic Verification \& Kubernetes Operator}\\
+        Standardized JSONL Evidence Audit Trail $\;|\;$ Automated Container Rescheduling $\;|\;$ SLO Verification
+    };
 
     \begin{scope}[on background layer]
         \node[layerbox, fit=(act_operator)] (layer4) {};
     \end{scope}
     \node[titlelabel] at (layer4.north west) [yshift=0.25cm] {\textbf{Layer 4: Closed-Loop Feedback \& Autonomous Diagnostic Remediation}};
 
-    % Connecting Arrows
-    \draw[arrow] (sut_frontend) -- (probe_ebpf);
-    \draw[arrow] (sut_cart) -- (probe_otel);
-    \draw[arrow] (sut_shipping) -- (probe_cgroup);
-    \draw[arrow] (sut_payment) -- (probe_promtail);
+    % =========================================================================
+    % CONNECTIONS & DATA FLOWS (ZERO CROSSING / ZERO OVERLAP)
+    % =========================================================================
+    % Layer 1 Intra: SUT to Probes (Straight vertical lines)
+    \draw[arrow] (sut_frontend) -- (probe_traces);
+    \draw[arrow] (sut_shipping) -- (probe_metrics);
+    \draw[arrow] (sut_payment)  -- (probe_logs);
 
-    \draw[arrow] (probe_cgroup.south) -- (store_prom.north);
-    \draw[arrow] (probe_promtail.south) -- (store_loki.north);
-    \draw[arrow] (probe_otel.south) -- (store_tempo.north);
-    \draw[arrow] (probe_ebpf.south) |- (store_prom.north);
+    % Layer 1 to Layer 2: Probes to Storage (Straight parallel vertical lines)
+    \draw[arrow] (probe_traces.south)  -- node[right, font=\sffamily\tiny] {OTLP Spans} (store_tempo.north);
+    \draw[arrow] (probe_metrics.south) -- node[right, font=\sffamily\tiny] {Prom Scrapes} (store_prom.north);
+    \draw[arrow] (probe_logs.south)    -- node[right, font=\sffamily\tiny] {Log Streams} (store_loki.north);
 
-    \draw[biarrow, draw=teal!80!black] (store_prom) -- node[above, font=\sffamily\tiny] {OpenMetrics Exemplars} (store_tempo);
+    % Layer 2 Intra: OpenMetrics Exemplar Bridge (Horizontal adjacent line between Tempo & Prometheus)
+    \draw[biarrow, draw=teal!85!black] (store_tempo.east) -- node[above, font=\sffamily\tiny\bfseries] {OpenMetrics Exemplars} (store_prom.west);
 
-    \draw[arrow, purple!80!black] (store_prom.south) -- ++(0,-0.3) -| (algo_fusion.north);
-    \draw[arrow, purple!80!black] (store_loki.south) -- (algo_fusion.north);
-    \draw[arrow, purple!80!black] (store_tempo.south) -- ++(0,-0.3) -| (algo_selftime.north);
+    % Layer 2 to Layer 3: Storage to Correlation Algorithms (Straight parallel vertical lines)
+    \draw[arrow, purple!85!black] (store_tempo.south) -- node[left, font=\sffamily\tiny] {Trace Trees} (algo_selftime.north);
+    \draw[arrow, purple!85!black] (store_prom.south)  -- node[right, font=\sffamily\tiny] {PromQL $\Delta M > 3\sigma$} ([xshift=-2.8cm]algo_fusion.north);
+    \draw[arrow, purple!85!black] (store_loki.south)  -- node[right, font=\sffamily\tiny] {LogQL Crash Sigs} ([xshift=2.8cm]algo_fusion.north);
 
-    \draw[biarrow, draw=purple!80!black] (algo_selftime) -- node[above, font=\sffamily\tiny] {Disambiguated Spans} (algo_fusion);
+    % Layer 3 Intra: Algorithm 1 to Algorithm 2 (Straight horizontal connection)
+    \draw[arrow, purple!85!black] (algo_selftime.east) -- node[above, font=\sffamily\tiny\bfseries] {Disambiguated $T_{\text{self}}$} (algo_fusion.west);
 
-    \draw[arrow, orange!90!black] (algo_fusion.south) |- (act_operator.east);
-    \draw[arrow, blue!80!black, dashed] (act_operator.west) -| ++(-1.5,4.8) |- (layer1.west);
+    % Layer 3 to Layer 4: Authoritative Verdict (Straight vertical down)
+    \draw[arrow, orange!90!black] ([xshift=-2.8cm]algo_fusion.south) -- node[right, font=\sffamily\tiny\bfseries] {Authoritative Verdict $\mathcal{V}^*$} (act_operator.north);
+
+    % Layer 4 Feedback Loop to Layer 1 (Clean external bypass route on the left margin)
+    \draw[arrow, blue!75!black, dashed] (act_operator.west) -- ++(-2.4, 0) |- node[near end, left, font=\sffamily\tiny, align=right] {Dynamic Telemetry Throttling\\\& Automated Healing Loop} ([yshift=-0.1cm]layer1.west);
 
 \end{tikzpicture}
-\caption{The PANOPTES Reference Architecture: A 4-layer framework integrating non-invasive kernel/user probing, federated multimodal storage, span self-time decomposition with cross-modal evidence fusion, and closed-loop diagnostic remediation.}
+\caption{The PANOPTES Reference Architecture: A 4-layer framework integrating non-invasive kernel/user probing, federated multimodal storage with OpenMetrics Exemplars, span self-time decomposition with cross-modal evidence fusion, and closed-loop diagnostic remediation.}
 \Description{Diagram illustrating the four structural layers of the PANOPTES reference architecture: Ingestion and Probing, Federated Multimodal Storage, Causal Correlation Engine, and Closed-Loop Remediation.}
 \label{fig:panoptes_architecture}
 \end{figure*}
