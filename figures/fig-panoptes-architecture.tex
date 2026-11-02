@@ -6,19 +6,19 @@
     layerbadge/.style={draw=black!70, rounded corners=3pt, align=center, inner sep=4pt, font=\sffamily\bfseries\scriptsize, text=black!90, fill=gray!12, minimum width=2.4cm},
     layerbox/.style={draw=black!40, rounded corners=4pt, dashed, inner sep=6pt, fill=black!2},
     sutnode/.style={basebox, fill=blue!10, draw=blue!65!black, minimum width=3.4cm, minimum height=0.60cm},
-    probenode/.style={basebox, fill=cyan!12, draw=cyan!75!black, minimum width=3.6cm, minimum height=0.70cm},
-    storenode/.style={basebox, fill=teal!12, draw=teal!75!black, minimum width=3.6cm, minimum height=0.72cm},
-    correnode/.style={basebox, fill=purple!12, draw=purple!80!black, minimum height=0.82cm},
-    actnode/.style={basebox, fill=orange!12, draw=orange!80!black, minimum width=12.4cm, minimum height=0.68cm},
-    arrow/.style={-{Stealth[scale=0.85]}, thick, draw=black!75},
-    biarrow/.style={{Stealth[scale=0.8]}-{Stealth[scale=0.8]}, thick, draw=black!70}
+    probenode/.style={basebox, fill=cyan!10, draw=cyan!80!black, minimum width=3.6cm, minimum height=0.70cm},
+    storenode/.style={basebox, fill=teal!10, draw=teal!80!black, minimum width=3.6cm, minimum height=0.72cm},
+    correnode/.style={basebox, fill=purple!10, draw=purple!80!black, minimum height=0.82cm},
+    actnode/.style={basebox, fill=orange!10, draw=orange!85!black, minimum width=12.4cm, minimum height=0.68cm},
+    arrow/.style={-{Stealth[scale=0.85]}, thick, draw=black!85},
+    biarrow/.style={{Stealth[scale=0.8]}-{Stealth[scale=0.8]}, thick, draw=black!80}
 ]
 
     % =========================================================================
     % LAYER 1: SUT & TELEMETRY INGESTION (PROBES)
     % =========================================================================
     % Left Badge (Swimlane Header)
-    \node[layerbadge, minimum height=1.9cm, fill=blue!8, draw=blue!60!black] (badge_l1) at (-7.0, 5.6) {
+    \node[layerbadge, minimum height=1.9cm, fill=blue!8, draw=blue!70!black] (badge_l1) at (-7.0, 5.6) {
         \textbf{Layer 1}\\[2pt]
         Telemetry\\
         Ingestion \&\\
@@ -33,19 +33,19 @@
     % Probe Row (Aligned vertically with the 3 pillars)
     \node[probenode] (probe_traces) at (-3.8, 5.0) {
         \textbf{OTel SDK \& Auto-Instr.}\\
-        \textit{Modality: Distributed Traces}\\
+        \textit{[Modality: Distributed Traces]}\\
         W3C TraceContext Propagation
     };
 
     \node[probenode] (probe_metrics) at (0.6, 5.0) {
         \textbf{eBPF \& cgroup v2 Scrapers}\\
-        \textit{Modality: Socket \& CPU Metrics}\\
+        \textit{[Modality: Socket \& CPU Metrics]}\\
         \texttt{tcp\_v4\_connect} $\;|\;$ Throttling
     };
 
     \node[probenode] (probe_logs) at (5.0, 5.0) {
         \textbf{Promtail DaemonSet}\\
-        \textit{Modality: Container Logs}\\
+        \textit{[Modality: Container Logs]}\\
         \texttt{/var/log/pods/*.log} Streaming
     };
 
@@ -57,7 +57,7 @@
     % LAYER 2: MULTIMODAL FEDERATED STORAGE BACKENDS
     % =========================================================================
     % Left Badge
-    \node[layerbadge, minimum height=1.1cm, fill=teal!8, draw=teal!60!black] (badge_l2) at (-7.0, 3.2) {
+    \node[layerbadge, minimum height=1.1cm, fill=teal!8, draw=teal!70!black] (badge_l2) at (-7.0, 3.2) {
         \textbf{Layer 2}\\[2pt]
         Multimodal\\
         Federated\\
@@ -66,19 +66,19 @@
 
     \node[storenode] (store_tempo) at (-3.8, 3.2) {
         \textbf{Grafana Tempo}\\
-        \textit{Modality: Distributed Traces}\\
+        \textit{[Distributed Trace Store]}\\
         OTLP Inverted Trace Indexing
     };
 
     \node[storenode] (store_prom) at (0.6, 3.2) {
         \textbf{Prometheus TSDB}\\
-        \textit{Modality: Time-Series Metrics}\\
+        \textit{[Time-Series Metric Store]}\\
         High-Frequency Scraping \& PromQL
     };
 
     \node[storenode] (store_loki) at (5.0, 3.2) {
         \textbf{Grafana Loki}\\
-        \textit{Modality: Structured Event Logs}\\
+        \textit{[Structured Event Log Store]}\\
         Label-Indexed Log Streams
     };
 
@@ -90,7 +90,7 @@
     % LAYER 3: CAUSAL CORRELATION & DIAGNOSTIC REASONING ENGINE
     % =========================================================================
     % Left Badge
-    \node[layerbadge, minimum height=1.2cm, fill=purple!8, draw=purple!60!black] (badge_l3) at (-7.0, 1.3) {
+    \node[layerbadge, minimum height=1.2cm, fill=purple!8, draw=purple!70!black] (badge_l3) at (-7.0, 1.3) {
         \textbf{Layer 3}\\[2pt]
         Causal\\
         Correlation\\
@@ -117,7 +117,7 @@
     % LAYER 4: CLOSED-LOOP REMEDIATION & VERIFICATION
     % =========================================================================
     % Left Badge
-    \node[layerbadge, minimum height=0.9cm, fill=orange!8, draw=orange!60!black] (badge_l4) at (-7.0, -0.6) {
+    \node[layerbadge, minimum height=0.9cm, fill=orange!8, draw=orange!70!black] (badge_l4) at (-7.0, -0.6) {
         \textbf{Layer 4}\\[2pt]
         Closed-Loop\\
         Remediation
@@ -141,29 +141,29 @@
     \draw[arrow] (sut_payment)  -- (probe_logs);
 
     % Layer 1 to Layer 2: Probes to Storage (3 parallel vertical arrows through clear corridor)
-    \draw[arrow] (probe_traces.south)  -- node[right, font=\tiny] {OTLP Spans} (store_tempo.north);
-    \draw[arrow] (probe_metrics.south) -- node[right, font=\tiny] {Prom Scrapes} (store_prom.north);
-    \draw[arrow] (probe_logs.south)    -- node[right, font=\tiny] {Log Streams} (store_loki.north);
+    \draw[arrow, blue!75!black]  (probe_traces.south)  -- node[right, font=\tiny\bfseries] {OTLP Spans} (store_tempo.north);
+    \draw[arrow, teal!75!black]  (probe_metrics.south) -- node[right, font=\tiny\bfseries] {Prom Scrapes} (store_prom.north);
+    \draw[arrow, orange!85!black] (probe_logs.south)    -- node[right, font=\tiny\bfseries] {Log Streams} (store_loki.north);
 
     % Layer 2 Intra: OpenMetrics Exemplar Bridge (Horizontal adjacent line between Tempo & Prometheus)
     \draw[biarrow, draw=teal!85!black] (store_tempo.east) -- node[above, font=\tiny\bfseries] {OpenMetrics} node[below, font=\tiny\bfseries] {Exemplars} (store_prom.west);
 
     % Layer 2 to Layer 3: Storage to Correlation Algorithms (3 parallel vertical arrows through clear corridor)
-    \draw[arrow, purple!85!black] (store_tempo.south) -- node[left, font=\tiny] {Span Trees} (algo_selftime.north);
-    \draw[arrow, purple!85!black] (store_prom.south)  -- node[right, font=\tiny] {PromQL $\Delta M > 3\sigma$} ([xshift=-2.2cm]algo_fusion.north);
-    \draw[arrow, purple!85!black] (store_loki.south)  -- node[right, font=\tiny] {LogQL Crash Sigs} ([xshift=2.2cm]algo_fusion.north);
+    \draw[arrow, purple!85!black] (store_tempo.south) -- node[left, font=\tiny\bfseries] {Trace Trees} (algo_selftime.north);
+    \draw[arrow, purple!85!black] (store_prom.south)  -- node[right, font=\tiny\bfseries] {PromQL $\Delta M > 3\sigma$} ([xshift=-2.2cm]algo_fusion.north);
+    \draw[arrow, purple!85!black] (store_loki.south)  -- node[right, font=\tiny\bfseries] {LogQL Crash Sigs} ([xshift=2.2cm]algo_fusion.north);
 
     % Layer 3 Intra: Algorithm 1 to Algorithm 2 (Straight horizontal connection)
     \draw[arrow, purple!85!black] (algo_selftime.east) -- node[above, font=\tiny\bfseries] {Disambiguated} node[below, font=\tiny\bfseries] {$T_{\text{self}}$} (algo_fusion.west);
 
     % Layer 3 to Layer 4: Authoritative Verdict (Straight vertical down)
-    \draw[arrow, orange!90!black] ([xshift=-2.2cm]algo_fusion.south) -- node[right, font=\tiny\bfseries] {Authoritative Diagnostic Verdict $\mathcal{V}^*$} (act_operator.north);
+    \draw[arrow, orange!90!black, very thick] ([xshift=-2.2cm]algo_fusion.south) -- node[right, font=\tiny\bfseries] {Authoritative Diagnostic Verdict $\mathcal{V}^*$} (act_operator.north);
 
     % Layer 4 Feedback Loop to Layer 1 (Clean external bypass route along the clear right margin)
-    \draw[arrow, blue!75!black, dashed] (act_operator.east) -- ++(0.7, 0) |- node[pos=0.25, right, font=\tiny, align=left] {Dynamic Telemetry Throttling\\\& Automated Healing Loop} (layer1.east);
+    \draw[arrow, blue!75!black, dashed, thick] (act_operator.east) -- ++(0.7, 0) |- node[pos=0.25, right, font=\tiny\bfseries, align=left] {Dynamic Telemetry Throttling\\\& Automated Healing Loop} (layer1.east);
 
 \end{tikzpicture}
-\caption{The PANOPTES Reference Architecture: A 4-layer framework integrating non-invasive kernel/user probing, federated multimodal storage with OpenMetrics Exemplars, span self-time decomposition with cross-modal evidence fusion, and closed-loop diagnostic remediation.}
+\caption{The PANOPTES Reference Architecture: A 4-layer framework integrating non-invasive kernel/user probing, federated multimodal storage with OpenMetrics Exemplars, span self-time decomposition with cross-modal evidence fusion, and closed-loop diagnostic remediation (designed following Okabe-Ito color-blind safe standards).}
 \Description{Diagram illustrating the four structural layers of the PANOPTES reference architecture: Ingestion and Probing, Federated Multimodal Storage, Causal Correlation Engine, and Closed-Loop Remediation.}
 \label{fig:panoptes_architecture}
 \end{figure*}
