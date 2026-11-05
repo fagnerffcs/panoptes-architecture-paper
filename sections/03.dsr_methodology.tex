@@ -1,23 +1,23 @@
 \section{Design Science Research Methodology}
 \label{sec:dsr_methodology}
 
-Unlike traditional natural science methodologies that aim to discover and explain existing phenomena, Design Science Research (DSR) is rooted in pragmatic epistemology \cite{simon_1969}. DSR focuses on creating and evaluating innovative artifacts that solve identified operational problems, extending human and organizational capabilities while contributing prescriptive knowledge to the scientific body of knowledge \cite{hevner_2004, gregor_2013}.
+Unlike traditional natural science methodologies that aim to discover and explain existing phenomena, Design Science Research (DSR) is rooted in pragmatic epistemology~\cite{simon_1969}. DSR focuses on creating and evaluating innovative artifacts that solve identified operational problems, extending human and organizational capabilities while contributing prescriptive knowledge to the scientific body of knowledge~\cite{hevner_2004, gregor_2013}.
 
-In this research, we adopt the formal Design Science Research Methodology (DSRM) process model articulated by Peffers et al. \cite{peffers_2007}. As summarized in Table~\ref{tab:dsr_elements}, our research cycle operationalizes the six sequential DSRM activities:
+In this research, we adopt the formal Design Science Research Methodology (DSRM) process model articulated by Peffers et al.~\cite{peffers_2007}. As summarized in Table~\ref{tab:dsr_elements}, our research cycle operationalizes the six sequential DSRM activities:
 
 \input{tables/tab-dsr-elements}
 
 \begin{enumerate}[leftmargin=1.2em, itemsep=3pt, topsep=4pt]
     \item \textbf{Problem Identification and Motivation:} As characterized in Section~\ref{sec:background}, diagnosing distributed cloud-native failures is hindered by telemetry silos, the Cascading Span Bias, and uncontrolled probe overhead. These challenges constitute a ``wicked problem'' characterized by complex interdependencies and conflicting trade-offs between diagnostic accuracy and resource overhead.
     \item \textbf{Define Objectives of a Solution:} The objectives are quantitatively formalized through our three Research Questions (RQ1--RQ3): (i) establish an architecturally unified, 4-layer reference framework with formal semantic invariants; (ii) achieve $>80\%$ automated root-cause accuracy under multi-class chaos perturbations; and (iii) constrain total observability CPU overhead to $\le 10\%$ of cluster capacity.
-    \item \textbf{Design and Development (The Artifact):} Following the artifact taxonomy of Vaishnavi and Kuechler \cite{vaishnavi_2015}, PANOPTES delivers three complementary contributions:
+    \item \textbf{Design and Development (The Artifact):} Following the artifact taxonomy of Vaishnavi and Kuechler~\cite{vaishnavi_2015}, PANOPTES delivers three complementary contributions:
     \begin{itemize}[leftmargin=1.0em, itemsep=1pt]
         \item \textit{Model / Reference Architecture:} A 4-layer conceptual model establishing clean separation between ingestion, storage, correlation, and remediation.
         \item \textit{Method / Algorithms:} A deterministic causal correlation algorithm based on exclusive Span Self-Time decomposition ($T_{\text{self}}$) and multimodal evidence fusion.
         \item \textit{Instantiation:} A fully automated Kubernetes-native deployment pipeline codified in Ansible playbooks, Helm charts, and custom OpenTelemetry Collector pipelines.
     \end{itemize}
     \item \textbf{Demonstration:} We instantiate the PANOPTES reference architecture within an isolated, multi-node Kubernetes testbed running the CNCF OpenTelemetry Astronomy Shop benchmark, simulating real-world e-commerce microservice traffic under Locust user load.
-    \item \textbf{Evaluation (Artifact Validation \& Benchmarking):} Following the evaluation taxonomy of Hevner et al. \cite{hevner_2004} and Gregor and Hevner \cite{gregor_2013}, we evaluate the artifact along three complementary dimensions: (i) \textit{Technical Feasibility and Invasiveness} by benchmarking the steady-state CPU and memory overhead against Control Principle \textbf{CP1}; (ii) \textit{Methodological Soundness and Diagnostic Utility} by comparing the PANOPTES correlation method ($T_{\text{self}}$ and multimodal evidence fusion) against unimodal baselines across $N=30$ stratified validation campaigns; and (iii) \textit{Architectural Completeness} by verifying closed-loop telemetry adaptation under resource pressure.
+    \item \textbf{Evaluation (Artifact Validation \& Benchmarking):} Following the evaluation taxonomy of Hevner et al.~\cite{hevner_2004} and Gregor and Hevner~\cite{gregor_2013}, we evaluate the artifact along three complementary dimensions: (i) \textit{Technical Feasibility and Invasiveness} by benchmarking the steady-state CPU and memory overhead against Control Principle \textbf{CP1}; (ii) \textit{Methodological Soundness and Diagnostic Utility} by comparing the PANOPTES correlation method ($T_{\text{self}}$ and multimodal evidence fusion) against unimodal baselines across $N=30$ stratified validation campaigns; and (iii) \textit{Architectural Completeness} by verifying closed-loop telemetry adaptation under resource pressure.
     \item \textbf{Communication:} The scientific contributions, reference models, and empirical findings are documented in this paper and released as an open-access replication package.
 \end{enumerate}
 
